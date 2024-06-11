@@ -1,0 +1,66 @@
+const { Builder, By, Key, until } = require('selenium-webdriver');
+const assert = require('assert');
+const chrome = require('selenium-webdriver/chrome');
+
+async function automateEbay() {
+    let driver = await new Builder().forBrowser('chrome').build();
+    try {
+        // Go to eBay
+        await driver.get('https://www.ebay.com/');
+        await driver.wait(until.titleContains('eBay'), 10000);
+        console.log('Navigated to eBay homepage.');
+
+        // Navigate to Electronics > Cell Phones & accessories
+        await driver.findElement(By.linkText('Electronics')).click();
+        await driver.wait(until.titleContains('Electronics'), 10000);
+        console.log('Navigated to Electronics category.');
+
+        await driver.wait(until.elementLocated(By.linkText('Cell Phones & Accessories')), 10000).click();
+        await driver.wait(until.titleContains('Cell Phones & Accessories'), 10000);
+        console.log('Navigated to Cell Phones & Accessories category.');
+
+        // Click Cell Phones & Smartphones
+        await driver.wait(until.elementLocated(By.linkText('Cell Phones & Smartphones')), 10000).click();
+        await driver.wait(until.titleContains('Cell Phones & Smartphones'), 10000);
+        console.log('Navigated to Cell Phones & Smartphones category.');
+
+        // Click All Filters
+        await driver.wait(until.elementLocated(By.linkText('All Filters')), 10000).click();
+        console.log('Clicked on All Filters.');
+
+        // Add 3 filters - Condition, Price, and Item location
+        // Example filter selectors, these might need to be updated based on the actual webpage
+        await driver.wait(until.elementLocated(By.id('e1-10')), 10000).click(); // Example ID for Condition filter
+        await driver.findElement(By.id('e1-12')).click(); // Example ID for Price filter
+        await driver.findElement(By.id('e1-15')).click(); // Example ID for Item location filter
+        console.log('Selected filters: Condition, Price, Item location.');
+
+        // Click Apply button
+        await driver.findElement(By.xpath("//button[contains(text(),'Apply')]")).click();
+        console.log('Applied filters.');
+
+        // Verify that the filter tags are applied
+        await driver.wait(until.elementsLocated(By.className('x-flyout__button')), 10000);
+        let appliedFilters = await driver.findElements(By.className('x-flyout__button'));
+        let filterNames = [];
+        for (let filter of appliedFilters) {
+            filterNames.push(await filter.getText());
+        }
+        console.log('Applied Filters:', filterNames);
+
+        // Assertions
+        assert(filterNames.includes('Condition'), 'Condition filter not applied');
+        assert(filterNames.includes('Price'), 'Price filter not applied');
+        assert(filterNames.includes('Item location'), 'Item location filter not applied');
+
+        console.log('All filters applied successfully and verified.');
+    } catch (error) {
+        console.error('An error occurred:', error);
+    } finally {
+        // Quit the browser
+        await driver.quit();
+    }
+}
+
+automateEbay();
+ 

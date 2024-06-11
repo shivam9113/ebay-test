@@ -1,0 +1,51 @@
+const { Builder, By, Key, until } = require('selenium-webdriver');
+const assert = require('assert');
+
+(async function testUrlLoads() {
+    let driver = await new Builder().forBrowser('chrome').build();
+    try {
+        let url = "https://www.ebay.com";
+        await driver.get(url);
+        
+        let title = await driver.getTitle();
+        assert.notStrictEqual(title, "", `URL ${url} did not load successfully.`);
+        console.log(`URL ${url} loaded successfully.`);
+    } catch (error) {
+        console.error(`Error: ${error}`);
+    } finally {
+        await driver.quit();
+    }
+})();
+
+(async function searchElements() {
+    let driver = await new Builder().forBrowser('chrome').build();
+    try {
+        await driver.get('https://www.ebay.com');
+        
+        let dropdownMenu = await driver.wait(until.elementLocated(By.id('gh-cat-box')), 10000);
+        await dropdownMenu.click();
+        await driver.sleep(2000);
+        
+        let computersTablets = await driver.findElement(By.linkText('Computers & Tablets'));
+        await computersTablets.click();
+        await driver.sleep(2000);
+        
+        // Search for the Macbook Air
+        let searchBox = await driver.findElement(By.className('gh-tb'));
+        await searchBox.sendKeys('Macbook Air', Key.RETURN);
+        
+        await driver.sleep(2000); // Give some time for the search results to load
+        
+        let screenshotPath = 'screenshot.png';
+        await driver.takeScreenshot().then((data) => {
+            require('fs').writeFileSync(screenshotPath, data, 'base64');
+        });
+        
+        let result = await driver.findElement(By.xpath('//h1[contains(text(), "Macbook Air")]'));
+        console.log(await result.getText());
+    } catch (error) {
+        console.error(`Error: ${error}`);
+    } finally {
+        await driver.quit();
+    }
+})();
